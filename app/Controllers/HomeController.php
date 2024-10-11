@@ -18,4 +18,9 @@ class HomeController extends Controller
     {
         return view("home/register");
     }
+
+    public function layouts()
+    {
+        return view("layouts/admin");
+    }
 }

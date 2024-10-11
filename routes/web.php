@@ -11,6 +11,7 @@ return [
     "/" => [HomeController::class, "index"],
     "/login" => [HomeController::class, "login"],
     "/register" => [HomeController::class, "register"],
+    "/layouts" => [HomeController::class, "layouts"],
 
     "/auth/store" => [AuthController::class, "store"],
     "/auth/verify" => [AuthController::class, "verify"],
@@ -28,7 +29,6 @@ return [
     "/admin" => [AdminController::class, "index"],
     "/admin/login" => [AdminController::class, "login"],
     "/admin/verify" => [AdminController::class, "verify"],
-    "/admin/dashboard" => [AdminController::class, "dashboard"],
     "/admin/logout" => [AdminController::class, "logout"],
 
     "/admin/customers" => [CustomersController::class, "index"],

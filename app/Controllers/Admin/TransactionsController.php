@@ -16,10 +16,10 @@ class TransactionsController
 
     public function view($request)
     {
-        $accountName = $request['user_id'];
+        $customerId = $request['customer_id'];
         $transaction = new Transaction();
-        $transactions = $transaction->show($accountName);
-        $accountLedger = ['accountName' => $accountName, 'transactions' =>$transactions];
+        $transactions = $transaction->show($customerId);
+        $accountLedger = ['customerId' => $customerId, 'transactions' =>$transactions];
         
         return view("admin/transactions/view", ['accountLedger' => $accountLedger]);
     }

@@ -8,9 +8,9 @@ class CustomersController
 {
     public function index()
     {
-        $users = new User();
-        $userList = $users->view();
-        return view("admin/customers/index", ['userList' => $userList]);
+        $customers = new User();
+        $customers = $customers->view();
+        return view("admin/customers/index", ['customers' => $customers]);
     }
 
     public function create()
@@ -54,7 +54,8 @@ class CustomersController
         $errors = [];
         $sanitizedRequest = [];
 
-        $sanitizedRequest['name'] = nameValidity($request['name'], $errors);
+        $sanitizedRequest['firstName'] = nameValidity($request['first_name'], $errors);
+        $sanitizedRequest['lastName'] = nameValidity($request['last_name'], $errors);
         $sanitizedRequest['email'] = sanitizedEmail($request['email'], $errors);
         $sanitizedRequest['password'] = sanitizedPassword($request['password'], $errors);
         $authPermit = $request['auth_permit'] ?? null;
