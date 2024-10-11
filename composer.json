@@ -1,0 +1,22 @@
+{
+  "name": "abdulalim07/bangubank",
+  "version": "1.0.0",
+  "description": "World's Best Bank App",
+  "type": "framework",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Abdul Alim",
+      "email": "abdulalimpvt@gmail.com"
+    }
+  ],
+  "require": {},
+  "autoload": {
+    "psr-4": {
+      "App\\": "app/"
+    },
+    "files": [
+      "helpers.php"
+    ]
+  }
+}
