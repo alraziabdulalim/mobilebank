@@ -1,3 +1,20 @@
+<?php
+$is_logged_in = isset($_SESSION['user']);
+
+if (!$is_logged_in) {
+  header("Location: ./login");
+  exit;
+}
+
+$errors = $_SESSION['errors'] ?? [];
+unset($_SESSION['errors']);
+
+$request = $_SESSION['sanitizedRequest'] ?? [];
+unset($_SESSION['sanitizedRequest']);
+
+$message = $_SESSION['message'] ?? '';
+unset($_SESSION['message']);
+?>
 <!DOCTYPE html>
 <html class="h-full bg-gray-100" lang="en">
 
@@ -34,7 +51,7 @@
     <div class="min-h-full">
         <div class="pb-32 bg-sky-600">
             <?php
-            include_once 'partials/nav.php';
+            include_once __DIR__ . '/partials/nav.php';
             ?>
             <header class="py-10">
                 <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -50,10 +67,7 @@
                 <div class="py-8 bg-white rounded-lg">
                     <!-- List of All The Customers -->
                     <?php
-                    // include_once 'partials/user-report.php';
-                    // include_once 'partials/create-customer-form.php';
-                    // include_once 'partials/customers-transactions-report.php';
-                    include_once 'partials/customer-transactions-report.php';
+                    include_once __DIR__ . '/partials/customers-report.php';
                     ?>
                 </div>
             </div>

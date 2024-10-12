@@ -8,34 +8,42 @@ class CustomerController
 {
     public function index()
     {
-        $transaction = new Transaction();
-        $selfTransactions = $transaction->show($_SESSION['user']['id']);
-
-        return view("customer/index", ['selfTransactions' => $selfTransactions]);
+        $userId = $_SESSION['user']['id'];
+        $transInfo = accountBalance($userId);
+    
+        return view("customer/index", [
+            'transInfo' => $transInfo
+        ]);
     }
 
     public function deposit()
     {
-        $transaction = new Transaction();
-        $selfTransactions = $transaction->show($_SESSION['user']['id']);
+        $userId = $_SESSION['user']['id'];
+        $transInfo = accountBalance($userId);
 
-        return view("customer/deposit", ['selfTransactions' => $selfTransactions]);
+        return view("customer/deposit",  [
+            'transInfo' => $transInfo
+        ]);
     }
 
     public function withdraw()
     {
-        $transaction = new Transaction();
-        $selfTransactions = $transaction->show($_SESSION['user']['id']);
+        $userId = $_SESSION['user']['id'];
+        $transInfo = accountBalance($userId);
 
-        return view("customer/withdraw", ['selfTransactions' => $selfTransactions]);
+        return view("customer/withdraw", [
+            'transInfo' => $transInfo
+        ]);
     }
 
     public function transfer()
     {
-        $transaction = new Transaction();
-        $selfTransactions = $transaction->show($_SESSION['user']['id']);
+        $userId = $_SESSION['user']['id'];
+        $transInfo = accountBalance($userId);
         
-        return view("customer/transfer", ['selfTransactions' => $selfTransactions]);
+        return view("customer/transfer", [
+            'transInfo' => $transInfo
+        ]);
     }
 
     public function logout()

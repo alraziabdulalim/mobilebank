@@ -11,16 +11,15 @@ class TransactionsController
         $transaction = new Transaction();
         $transactions = $transaction->view();
         
-        return view("admin/transactions/index", ['transactions' => $transactions]);
+        return view("admin/transactions", ['transactions' => $transactions]);
     }
 
     public function view($request)
     {
         $customerId = $request['customer_id'];
-        $transaction = new Transaction();
-        $transactions = $transaction->show($customerId);
-        $accountLedger = ['customerId' => $customerId, 'transactions' =>$transactions];
+        $transInfo = accountBalance($customerId);
+        $accountLedger = ['customerId' => $customerId, 'transactions' =>$transInfo['transactions']];
         
-        return view("admin/transactions/view", ['accountLedger' => $accountLedger]);
+        return view("admin/customer-transactions", ['accountLedger' => $accountLedger]);
     }
 }

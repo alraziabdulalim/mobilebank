@@ -47,15 +47,15 @@ if (isset($_SESSION['sanitizedRequest'])) {
     <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]">
       <div class="px-6 py-12 bg-white shadow sm:rounded-lg sm:px-12">
 
-        <form class="space-y-6" action="./auth/store" method="POST">
+        <form class="space-y-6" action="/customer-registration" method="POST">
           <div>
-            <label for="name" class="block text-sm font-medium leading-6 text-gray-900">Name</label>
+            <label for="name" class="block text-sm font-medium leading-6 text-gray-900">Full Name</label>
             <div class="mt-2">
-              <input id="name" name="name" type="text" value="<?= isset($request['name']) ? $request['name'] : ''; ?>"
+              <input id="full-name" name="fullName" type="text" value="<?= isset($request['fullName']) ? $request['fullName'] : ''; ?>"
                 required
                 class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-emerald-600 sm:text-sm sm:leading-6 p-2" />
               <div class="text-red-400">
-                <?= isset($errors['name']) ? $errors['name'] : ''; ?>
+                <?= isset($errors['fullName']) ? $errors['fullName'] : ''; ?>
               </div>
             </div>
           </div>

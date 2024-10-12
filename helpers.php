@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Models\Transaction;
 
 function redirect($location, $message = null)
 {
@@ -40,6 +41,27 @@ function nameValidity(string $name, array &$errors): string
         return '';
     }
     return sanitize($name);
+}
+
+function getFirstAndLastName($fullName) {
+    
+    $fullName = trim($fullName);
+
+    $nameParts = explode(' ', $fullName);
+
+    if (count($nameParts) > 1) {
+        $firstName = array_shift($nameParts);
+        
+        $lastName = implode(' ', $nameParts);
+    } else {
+        $firstName = $fullName;
+        $lastName = '';
+    }
+
+    return [
+        'first_name' => $firstName,
+        'last_name' => $lastName
+    ];
 }
 
 function sanitizedEmail(string $email, array &$errors): string
@@ -147,12 +169,40 @@ function amountValidity(string $amount, array &$errors): string
 
 function solidAmountValidity(string $amount, array &$errors): string
 {
-    // Check if the amount is a valid integer (solid number)
     if (!preg_match('/^\d+$/', $amount)) {
         $errors['amount'] = 'Amount must be a valid solid number (no decimals).';
         return '';
     }
 
-    // Convert the amount to an integer and return it as a formatted string
     return number_format((int) $amount, 0, '.', '');
+}
+
+function accountBalance($userId)
+{
+    $transactions = (new Transaction())->show($userId);
+    $balance = 0;
+
+    foreach ($transactions as $transaction) {
+
+        $amount = $transaction['trans_type'] == 'deposit'
+            ? $transaction['amount']
+            : - ($transaction['amount']);
+
+        $balance += $amount;
+    }
+    
+    $transInfo = [
+        'transactions' => $transactions,
+        'balance' => $balance
+    ];
+
+    return $transInfo;
+}
+
+function customerNameShow($customerId){
+    $user = new User();
+    $nameInArray = $user->customerNameShow($customerId);
+    $customerName = $nameInArray['first_name'] . ' ' . $nameInArray['last_name'];
+
+    return $customerName;
 }

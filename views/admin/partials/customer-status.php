@@ -18,7 +18,7 @@
 
 <!-- Approval Line START -->
 <?php if (htmlspecialchars($customer['auth_permit'] ?? '') == '') { ?>
-    <form method="POST" action="/admin/customers/update">
+    <form method="POST" action="/admin/customers-update">
         <input type="hidden" name="user_id" value="<?= htmlspecialchars($customer['id']) ?>">
 
         <button type="submit" name="auth_permit" value="is_Permit"

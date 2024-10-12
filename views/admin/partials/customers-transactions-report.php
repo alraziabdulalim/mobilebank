@@ -28,12 +28,12 @@
                             <tr>
                                 <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-800 sm:pl-0">
 
-                                    <form method="POST" action="/admin/transactions/view">
+                                    <form method="POST" action="/admin/customer-transactions">
                                         <input type="hidden" name="customer_id" value="<?= htmlspecialchars($transaction['user_id']); ?>">
 
                                         <button type="submit" name="auth_permit"
-                                            class="inline-flex items-center justify-center h-6 rounded-md bg-sky-500 px-3">
-                                            <span class="text-sm font-medium leading-none text-white"><?= htmlspecialchars($transaction['user_id']); ?></span>
+                                            class="inline-flex items-center justify-center h-6 rounded-md px-3">
+                                            <span class="text-sm font-medium leading-none"><?= customerNameShow($transaction['user_id']); ?></span>
                                         </button>
                                     </form>
 

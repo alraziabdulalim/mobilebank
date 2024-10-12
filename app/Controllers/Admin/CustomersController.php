@@ -10,12 +10,12 @@ class CustomersController
     {
         $customers = new User();
         $customers = $customers->view();
-        return view("admin/customers/index", ['customers' => $customers]);
+        return view("admin/customers", ['customers' => $customers]);
     }
 
     public function create()
     {
-        return view("admin/customers/create");
+        return view("admin/customers-create");
     }
 
     public function store($request)
@@ -26,7 +26,7 @@ class CustomersController
             $_SESSION['errors'] = $validateRequest['errors'];
             $_SESSION['sanitizedRequest'] = $validateRequest['sanitizedRequest'];
 
-            return redirect('./create');
+            return redirect('customers-create');
         }
 
         try {
@@ -36,16 +36,16 @@ class CustomersController
             if ($newUser) {
                 $_SESSION['message'] = 'Your Registration is under processing. Wait for confirmation e-mail. Thanks';
 
-                return redirect('../customers');
+                return redirect('customers');
             } else {
                 $_SESSION['message'] = 'Registration Unsuccessful!';
 
-                return redirect('./create');
+                return redirect('customers-create');
             }
         } catch (\Exception $e) {
             $_SESSION['errors'] = ['email' => $e->getMessage()];
 
-            return redirect('./create');
+            return redirect('customers-create');
         }
     }
 
@@ -77,11 +77,9 @@ class CustomersController
         if ($newRequest['auth_permit'] != null) {
             $user->isPermit($newRequest);
 
-            // return view("admin/customers"); //does not work
-            return redirect('/admin/customers');
+            return redirect('./customers');
         }
 
-        // return view("admin/customers"); //does not work
-        return redirect('/admin/customers');
+        return redirect('./customers');
     }
 }

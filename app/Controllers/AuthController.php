@@ -39,8 +39,11 @@ class AuthController extends Controller
     {
         $errors = [];
         $sanitizedRequest = [];
+        $snitizedName = nameValidity($request['fullName'], $errors);
+        $fullName = getFirstAndLastName($snitizedName);
 
-        $sanitizedRequest['name'] = nameValidity($request['name'], $errors);
+        $sanitizedRequest['firstName'] = $fullName['first_name'] ?? null;
+        $sanitizedRequest['lastName'] = $fullName['last_name'] ?? null;
         $sanitizedRequest['email'] = sanitizedEmail($request['email'], $errors);
         $sanitizedRequest['password'] = sanitizedPassword($request['password'], $errors);
         $sanitizedRequest['role'] = null;
@@ -66,6 +69,6 @@ class AuthController extends Controller
 
         $_SESSION['user'] = dataVerify($sanitizedRequest);
 
-        header('Location: ../customer');
+        header('Location: ../dashboard');
     }
 }

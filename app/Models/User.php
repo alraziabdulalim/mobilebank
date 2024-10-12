@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use PDO;
+
 class User extends Model
 {
     public function create(array $data)
@@ -44,15 +46,6 @@ class User extends Model
         return $stmt->fetch();
     }
 
-    public function dataVerify($email)
-    {
-        $stmt = $this->db->prepare("SELECT * FROM user WHERE email = :email");
-        $stmt->bindParam(':email', $email);
-        $stmt->execute();
-
-        return $stmt->fetchAll();
-    }
-
     public function edit($id)
     {
         return $this->show($id);
@@ -72,6 +65,14 @@ class User extends Model
         return $stmt->execute();
     }
 
+    public function delete($id)
+    {
+        $stmt = $this->db->prepare("DELETE FROM user WHERE id = :id");
+        $stmt->bindParam(':id', $id);
+
+        return $stmt->execute();
+    }
+
     public function isPermit($request)
     {
         $stmt = $this->db->prepare("UPDATE user SET role = :role, auth_permit = :auth_permit WHERE id = :id");
@@ -82,11 +83,22 @@ class User extends Model
         return $stmt->execute();
     }
 
-    public function delete($id)
+    public function dataVerify($email)
     {
-        $stmt = $this->db->prepare("DELETE FROM user WHERE id = :id");
-        $stmt->bindParam(':id', $id);
+        $stmt = $this->db->prepare("SELECT * FROM user WHERE email = :email");
+        $stmt->bindParam(':email', $email);
+        $stmt->execute();
 
-        return $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    public function customerNameShow($customerId)
+    {
+        $stmt = $this->db->prepare("SELECT first_name, last_name FROM user WHERE id = :id");
+
+        $stmt->bindParam(':id', $customerId, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 }
