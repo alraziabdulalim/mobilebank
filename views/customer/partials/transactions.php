@@ -4,7 +4,11 @@
             Current Balance
         </dt>
         <dd class="w-full flex-none text-3xl font-medium leading-10 tracking-tight text-gray-900">
-            $<?= htmlspecialchars($transInfo['balance']); ?>
+            <?php
+            if(isset($transInfo['balance'])){
+                echo '$'.htmlspecialchars($transInfo['balance']);
+            }
+            ?>
         </dd>
     </div>
 </dl>
@@ -39,28 +43,33 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 bg-white">
-                        <?php foreach ($transInfo['transactions'] as $transaction) { ?>
-                            <tr>
-                                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-800 sm:pl-0">
-                                    <?= htmlspecialchars($transaction['pay_to']); ?>
-                                </td>
-                                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 sm:pl-0">
-                                    <?= htmlspecialchars($transaction['pay_to']); ?>
-                                </td>
-                                <?php if (($transaction['trans_type']) == 'deposit') { ?>
-                                    <td class="whitespace-nowrap px-2 py-4 text-sm font-medium text-emerald-600">
-                                        <?= '+$' . htmlspecialchars($transaction['amount']); ?>
+                        <?php
+                        if (isset($transInfo['transactions'])) {
+                            foreach ($transInfo['transactions'] as $transaction) { ?>
+                                <tr>
+                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-800 sm:pl-0">
+                                        <?= htmlspecialchars($transaction['pay_to']); ?>
                                     </td>
-                                <?php } else { ?>
-                                    <td class="whitespace-nowrap px-2 py-4 text-sm font-medium text-red-600">
-                                        <?= '-$' . htmlspecialchars($transaction['amount']); ?>
+                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 sm:pl-0">
+                                        <?= htmlspecialchars($transaction['pay_to']); ?>
                                     </td>
-                                <?php } ?>
-                                <td class="whitespace-nowrap px-2 py-4 text-sm text-gray-500">
-                                    <?= htmlspecialchars($transaction['created_at']); ?>
-                                </td>
-                            </tr>
-                        <?php } ?>
+                                    <?php if (($transaction['trans_type']) == 'deposit') { ?>
+                                        <td class="whitespace-nowrap px-2 py-4 text-sm font-medium text-emerald-600">
+                                            <?= '+$' . htmlspecialchars($transaction['amount']); ?>
+                                        </td>
+                                    <?php } else { ?>
+                                        <td class="whitespace-nowrap px-2 py-4 text-sm font-medium text-red-600">
+                                            <?= '-$' . htmlspecialchars($transaction['amount']); ?>
+                                        </td>
+                                    <?php } ?>
+                                    <td class="whitespace-nowrap px-2 py-4 text-sm text-gray-500">
+                                        <?= htmlspecialchars($transaction['created_at']); ?>
+                                    </td>
+                                </tr>
+                        <?php
+                            }
+                        }
+                        ?>
 
                     </tbody>
                 </table>

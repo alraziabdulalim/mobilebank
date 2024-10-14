@@ -6,6 +6,23 @@ use PDO;
 
 class User extends Model
 {
+    public function createTable()
+    {
+        $sql = "CREATE TABLE IF NOT EXISTS user (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            first_name TEXT NOT NULL,
+            last_name TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
+            password TEXT NOT NULL,
+            role TEXT NOT NULL,
+            auth_permit TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )";
+
+        $this->db->exec($sql);
+        echo "Table 'user' created successfully (or already exists).\n";
+    }
+
     public function create(array $data)
     {
         $stmt = $this->db->prepare("SELECT COUNT(*) FROM user WHERE email = :email");
@@ -17,7 +34,7 @@ class User extends Model
             throw new \Exception("The email address '{$data['email']}' is already in use.");
         }
 
-        $stmt = $this->db->prepare("INSERT INTO user (first_name, last_name, email, password, role, auth_permit, created_at) VALUES (:first_name, :last_name, :email, :password, :role, :auth_permit, NOW())");
+        $stmt = $this->db->prepare("INSERT INTO user (first_name, last_name, email, password, role, auth_permit, created_at) VALUES (:first_name, :last_name, :email, :password, :role, :auth_permit, CURRENT_TIMESTAMP)");
         $stmt->bindParam(':first_name', $data['firstName']);
         $stmt->bindParam(':last_name', $data['lastName']);
         $stmt->bindParam(':email', $data['email']);

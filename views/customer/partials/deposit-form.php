@@ -5,7 +5,11 @@
             Current Balance
         </dt>
         <dd class="w-full flex-none text-3xl font-medium leading-10 tracking-tight text-gray-900">
-            $<?= htmlspecialchars($transInfo['balance']); ?>
+            <?php
+            if(isset($transInfo['balance'])){
+                echo '$'.htmlspecialchars($transInfo['balance']);
+            }
+            ?>
         </dd>
     </div>
 </dl>

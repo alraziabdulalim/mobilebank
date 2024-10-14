@@ -42,12 +42,12 @@ class AuthController extends Controller
         $snitizedName = nameValidity($request['fullName'], $errors);
         $fullName = getFirstAndLastName($snitizedName);
 
-        $sanitizedRequest['firstName'] = $fullName['first_name'] ?? null;
-        $sanitizedRequest['lastName'] = $fullName['last_name'] ?? null;
+        $sanitizedRequest['firstName'] = $fullName['first_name'] ?? '';
+        $sanitizedRequest['lastName'] = $fullName['last_name'] ?? '';
         $sanitizedRequest['email'] = sanitizedEmail($request['email'], $errors);
         $sanitizedRequest['password'] = sanitizedPassword($request['password'], $errors);
-        $sanitizedRequest['role'] = null;
-        $sanitizedRequest['auth_permit'] = null;
+        $sanitizedRequest['role'] = '';
+        $sanitizedRequest['auth_permit'] = '';
 
         return ['errors' => $errors, 'sanitizedRequest' => $sanitizedRequest];
     }
