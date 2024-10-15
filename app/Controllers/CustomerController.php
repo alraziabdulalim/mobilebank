@@ -2,8 +2,6 @@
 
 namespace App\Controllers;
 
-use App\Models\Transaction;
-
 class CustomerController
 {
     public function index()

@@ -1,12 +1,12 @@
 {
-  "name": "abdulalim07/bangubank",
+  "name": "abdulalim07/mobilebank",
   "version": "1.0.0",
-  "description": "World's Best Bank App",
+  "description": "MobileBank is a demo application that simulates how an online banking app works.",
   "type": "framework",
   "license": "MIT",
   "authors": [
     {
-      "name": "Abdul Alim",
+      "name": "Al Razi Abdul Alim",
       "email": "abdulalimpvt@gmail.com"
     }
   ],

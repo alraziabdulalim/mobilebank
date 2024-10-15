@@ -4,7 +4,7 @@ namespace App\Models;
 
 use PDO;
 
-class Model
+class Model_2
 {
     protected PDO $db;
 
@@ -12,13 +12,14 @@ class Model
     {
         $config = require __DIR__ . "/../../config/database.php";
 
-        if (!is_array($config) || !isset($config['path'])) {
-            throw new \Exception('Invalid SQLite database configuration.');
+        if (!is_array($config) || 
+            !isset($config['host'], $config['dbname'], $config['username'], $config['password'])) {
+            throw new \Exception('Invalid database configuration.');
         }
 
         try {
-            $dsn = "sqlite:{$config['path']}";
-            $this->db = new PDO($dsn);
+            $dsn = "mysql:host={$config['host']};dbname={$config['dbname']}";
+            $this->db = new PDO($dsn, $config['username'], $config['password']);
 
             $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);

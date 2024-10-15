@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use PDO;
-
 class Transaction extends Model
 {
     public function createTable()

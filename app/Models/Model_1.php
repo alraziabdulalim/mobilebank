@@ -4,7 +4,7 @@ namespace App\Models;
 
 use PDO;
 
-class yModel
+class Model_1
 {
     protected PDO $db;
     public function __construct()
