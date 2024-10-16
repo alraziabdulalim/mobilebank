@@ -2,120 +2,113 @@
 
 namespace App\Models;
 
-use PDO;
-
 class User extends Model
 {
-    public function createTable()
+    public function __construct()
     {
-        $sql = "CREATE TABLE IF NOT EXISTS user (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            first_name TEXT NOT NULL,
-            last_name TEXT NOT NULL,
-            email TEXT NOT NULL UNIQUE,
-            password TEXT NOT NULL,
-            role TEXT NOT NULL,
-            auth_permit TEXT NOT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )";
+        parent::__construct('users');
+    }
 
-        $this->db->exec($sql);
-        echo "Table 'user' created successfully (or already exists).\n";
+    public function initializeDataFile(): void
+    {
+        if (!file_exists($this->dataFile)) {
+            file_put_contents($this->dataFile, json_encode([]));
+        }
     }
 
     public function create(array $data)
     {
-        $stmt = $this->db->prepare("SELECT COUNT(*) FROM user WHERE email = :email");
-        $stmt->bindParam(':email', $data['email']);
-        $stmt->execute();
-        $emailExists = $stmt->fetchColumn();
-
-        if ($emailExists) {
-            throw new \Exception("The email address '{$data['email']}' is already in use.");
+        foreach ($this->getAll() as $user) {
+            if ($user['email'] === $data['email']) {
+                throw new \Exception("The email address '{$data['email']}' is already in use.");
+            }
         }
 
-        $stmt = $this->db->prepare("INSERT INTO user (first_name, last_name, email, password, role, auth_permit, created_at) VALUES (:first_name, :last_name, :email, :password, :role, :auth_permit, CURRENT_TIMESTAMP)");
-        $stmt->bindParam(':first_name', $data['firstName']);
-        $stmt->bindParam(':last_name', $data['lastName']);
-        $stmt->bindParam(':email', $data['email']);
-        $stmt->bindParam(':password', $data['password']);
-        $stmt->bindParam(':role', $data['role']);
-        // $stmt->bindValue(':role', 'role');
-        $stmt->bindParam(':auth_permit', $data['auth_permit']);
+        $data['id'] = $this->generateUniqueId();
+        $data['created_at'] = date('Y-m-d H:i:s');
 
-        return $stmt->execute();
+        return $this->store($data);
     }
 
-    public function view()
+    public function view(): array
     {
-        $stmt = $this->db->prepare("SELECT * FROM user");
-        $stmt->execute();
-
-        return $stmt->fetchAll();
+        return $this->getAll();
     }
 
-    public function show($email)
+    public function show($email): ?array
     {
-        $stmt = $this->db->prepare("SELECT * FROM user WHERE email = :email");
-        $stmt->bindParam(':email', $email);
-        $stmt->execute();
+        foreach ($this->getAll() as $user) {
+            if ($user['email'] === $email) {
+                return $user;
+            }
+        }
 
-        return $stmt->fetch();
+        return null;
     }
 
-    public function edit($id)
+    public function edit($id): ?array
     {
-        return $this->show($id);
+        return $this->findById($id);
     }
 
-    public function update($id, array $data)
+    public function update($id, array $data): bool
     {
-        $stmt = $this->db->prepare("UPDATE user SET firstName = :first_name, lastName = :last_name, email = :email, password = :password, role = :role, auth_permit = :auth_permit WHERE id = :id");
-        $stmt->bindParam(':first_name', $data['firstName']);
-        $stmt->bindParam(':last_name', $data['lastName']);
-        $stmt->bindParam(':email', $data['email']);
-        $stmt->bindParam(':password', $data['password']);
-        $stmt->bindParam(':role', $data['role']);
-        $stmt->bindParam(':auth_permit', $data['auth_permit']);
-        $stmt->bindParam(':id', $id);
-
-        return $stmt->execute();
+        return parent::update($id, $data);
     }
 
-    public function delete($id)
+    public function delete($id): bool
     {
-        $stmt = $this->db->prepare("DELETE FROM user WHERE id = :id");
-        $stmt->bindParam(':id', $id);
-
-        return $stmt->execute();
+        return parent::delete($id);
     }
 
-    public function isPermit($request)
+    public function isPermit($request): bool
     {
-        $stmt = $this->db->prepare("UPDATE user SET role = :role, auth_permit = :auth_permit WHERE id = :id");
-        $stmt->bindParam(':role', $request['role']);
-        $stmt->bindParam(':auth_permit', $request['auth_permit']);
-        $stmt->bindParam(':id', $request['user_id']);
+        $data = $this->findById($request['user_id']);
 
-        return $stmt->execute();
+        if ($data) {
+            $data['role'] = $request['role'];
+            $data['auth_permit'] = $request['auth_permit'];
+
+            return $this->update($request['user_id'], $data);
+        }
+
+        return false;
     }
 
-    public function dataVerify($email)
+    public function dataVerify($email): array
     {
-        $stmt = $this->db->prepare("SELECT * FROM user WHERE email = :email");
-        $stmt->bindParam(':email', $email);
-        $stmt->execute();
-
-        return $stmt->fetchAll();
+        return array_filter($this->getAll(), fn($user) => $user['email'] === $email);
     }
 
-    public function customerNameShow($customerId)
+    public function customerNameShow($customerId): ?array
     {
-        $stmt = $this->db->prepare("SELECT first_name, last_name FROM user WHERE id = :id");
+        $user = $this->findById($customerId);
+        if ($user) {
+            return [
+                'first_name' => $user['first_name'],
+                'last_name' => $user['last_name']
+            ];
+        }
 
-        $stmt->bindParam(':id', $customerId, PDO::PARAM_INT);
-        $stmt->execute();
+        return null;
+    }
 
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+    private function generateUniqueId(): int
+    {
+        $users = $this->getAll();
+        $maxId = 0;
+
+        foreach ($users as $user) {
+            if ($user['id'] > $maxId) {
+                $maxId = $user['id'];
+            }
+        }
+
+        return $maxId + 1;
+    }
+
+    public function findByEmailPublic(string $email): ?array
+    {
+        return $this->findByEmail($email);
     }
 }

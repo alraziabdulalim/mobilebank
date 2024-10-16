@@ -2,36 +2,76 @@
 
 namespace App\Models;
 
-use PDO;
-
 class Model
 {
-    protected PDO $db;
+    protected string $dataFile;
 
-    public function __construct()
+    public function __construct(string $filename)
     {
-        $config = require __DIR__ . "/../../config/database.php";
+        $this->dataFile = __DIR__ . "/../../datastore/JSON/{$filename}.json";
 
-        // if (!is_array($config) || 
-        //     !isset($config['host'], $config['dbname'], $config['username'], $config['password'])) {
-        //     throw new \Exception('Invalid database configuration.');
-        // }
+        if (!file_exists($this->dataFile)) {
+            file_put_contents($this->dataFile, json_encode([]));
+        }
+    }
 
-        if (!is_array($config) || !isset($config['path'])) {
-            throw new \Exception('Invalid SQLite database configuration.');
+    public function getAll(): array
+    {
+        return json_decode(file_get_contents($this->dataFile), true) ?? [];
+    }
+
+    public function store(array $data): bool
+    {
+        $currentData = $this->getAll();
+        $currentData[] = $data;
+
+        return file_put_contents($this->dataFile, json_encode($currentData, JSON_PRETTY_PRINT)) !== false;
+    }
+
+    public function findById($id): ?array
+    {
+        $data = $this->getAll();
+
+        foreach ($data as $record) {
+            if ($record['id'] == $id) {
+                return $record;
+            }
         }
 
-        try {
-            // $dsn = "mysql:host={$config['host']};dbname={$config['dbname']}";
-            // $this->db = new PDO($dsn, $config['username'], $config['password']);
-            $dsn = "sqlite:{$config['path']}";
-            $this->db = new PDO($dsn);
+        return null;
+    }
 
-            $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $this->db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-        } catch (\PDOException $e) {
-            
-            throw new \Exception('Database connection failed: ' . $e->getMessage());
+    protected function findByEmail(string $email): ?array
+    {
+        $allData = $this->getAll();
+        foreach ($allData as $record) {
+            if ($record['email'] === $email) {
+                return $record;
+            }
         }
+        return null;
+    }
+
+    public function update($id, array $newData): bool
+    {
+        $data = $this->getAll();
+
+        foreach ($data as &$record) {
+            if ($record['id'] == $id) {
+                $record = array_merge($record, $newData);
+                return file_put_contents($this->dataFile, json_encode($data, JSON_PRETTY_PRINT)) !== false;
+            }
+        }
+
+        return false;
+    }
+
+    public function delete($id): bool
+    {
+        $data = $this->getAll();
+
+        $filteredData = array_filter($data, fn($record) => $record['id'] != $id);
+
+        return file_put_contents($this->dataFile, json_encode($filteredData, JSON_PRETTY_PRINT)) !== false;
     }
 }

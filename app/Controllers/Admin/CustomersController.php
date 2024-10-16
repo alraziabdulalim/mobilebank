@@ -54,8 +54,8 @@ class CustomersController
         $errors = [];
         $sanitizedRequest = [];
 
-        $sanitizedRequest['firstName'] = nameValidity($request['first_name'], $errors);
-        $sanitizedRequest['lastName'] = nameValidity($request['last_name'], $errors);
+        $sanitizedRequest['first_name'] = nameValidity($request['first_name'], $errors);
+        $sanitizedRequest['last_name'] = nameValidity($request['last_name'], $errors);
         $sanitizedRequest['email'] = sanitizedEmail($request['email'], $errors);
         $sanitizedRequest['password'] = sanitizedPassword($request['password'], $errors);
         $authPermit = $request['auth_permit'] ?? null;

@@ -16,7 +16,7 @@ function runCommand(string $command): void {
 }
 
 // Run commands
-runCommand('php datastore/create_sqlite_db.php');
+// runCommand('php datastore/create_sqlite_db.php');
 runCommand('php datastore/migration.php');
 
 echo "All commands executed successfully!";

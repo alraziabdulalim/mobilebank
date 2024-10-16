@@ -3,7 +3,7 @@
 use App\Models\User;
 use App\Models\Transaction;
 
-function redirect($location, $message = null)
+function redirect(string $location, ?string $message = null): void
 {
     if ($message) {
         $_SESSION['flash_message'] = $message;
@@ -13,14 +13,14 @@ function redirect($location, $message = null)
     exit();
 }
 
-function displayMessage($message = null)
+function displayMessage(?string $message = null): void
 {
     if ($message) {
         echo "<p>" . htmlspecialchars($message) . "</p>";
     }
 }
 
-function view(string $view, array $data = [])
+function view(string $view, array $data = []): void
 {
     extract($data);
     require __DIR__ . "/views/{$view}.php";
@@ -36,38 +36,26 @@ function sanitize($data)
 
 function nameValidity(string $name, array &$errors): string
 {
-    if (empty($name) || strlen($name) < 3) {
+    if (strlen(trim($name)) < 3) {
         $errors['name'] = 'Name must be at least 3 characters long.';
         return '';
     }
     return sanitize($name);
 }
 
-function getFirstAndLastName($fullName) {
-    
-    $fullName = trim($fullName);
+function getFirstAndLastName(string $fullName): array
+{
+    $nameParts = preg_split('/\s+/', trim($fullName));
+    $firstName = array_shift($nameParts);
+    $lastName = implode(' ', $nameParts) ?: '';
 
-    $nameParts = explode(' ', $fullName);
-
-    if (count($nameParts) > 1) {
-        $firstName = array_shift($nameParts);
-        
-        $lastName = implode(' ', $nameParts);
-    } else {
-        $firstName = $fullName;
-        $lastName = '';
-    }
-
-    return [
-        'first_name' => $firstName,
-        'last_name' => $lastName
-    ];
+    return ['first_name' => $firstName, 'last_name' => $lastName];
 }
 
 function sanitizedEmail(string $email, array &$errors): string
 {
     $sanitizedEmail = sanitize($email);
-    if (empty($sanitizedEmail) || !filter_var($sanitizedEmail, FILTER_VALIDATE_EMAIL)) {
+    if (!filter_var($sanitizedEmail, FILTER_VALIDATE_EMAIL)) {
         $errors['email'] = 'Invalid email address.';
         return '';
     }
@@ -77,18 +65,17 @@ function sanitizedEmail(string $email, array &$errors): string
 
 function sanitizedPassword(string $password, array &$errors): string
 {
-    if (empty($password) || strlen($password) < 6) {
+    if (strlen($password) < 6) {
         $errors['password'] = 'Password must be at least 6 characters long.';
         return '';
     }
 
-    $sanitizedPassword = sanitize($password);
-    return password_hash($sanitizedPassword, PASSWORD_DEFAULT);
+    return password_hash(sanitize($password), PASSWORD_DEFAULT);
 }
 
 function passwordValidity(string $password, array &$errors): string
 {
-    if (empty($password) || strlen($password) < 6) {
+    if (strlen($password) < 6) {
         $errors['password'] = 'Password must be at least 6 characters long.';
         return '';
     }
@@ -98,111 +85,76 @@ function passwordValidity(string $password, array &$errors): string
 
 function dataVerify(array $sanitizedRequest)
 {
-    $redirectUrl = '../login';
-    $redirectMessage = 'Recheck your credentials.';
-
-    $user = new User();
-    $existingUser = $user->dataVerify($sanitizedRequest['email']);
-
-    if (!$existingUser) {
-        $_SESSION['message'] = $redirectMessage;
-        return redirect($redirectUrl);
-    }
-
-    if (password_verify($sanitizedRequest['password'], $existingUser[0]['password'])) {
-
-        $userData = $existingUser[0];
-    } else {
-        $_SESSION['message'] = $redirectMessage;
-
-        return redirect($redirectUrl);
-    }
-
-    if ($existingUser[0]['auth_permit'] == 'is_Permit') {
-
-        return $userData;
-    }
-
-    $_SESSION['message'] = 'Your Registration is under processing. Wait for confirmation e-mail. Thanks.';
-    return redirect($redirectUrl);
+    return userVerification($sanitizedRequest, '../login', 'Recheck your credentials.');
 }
 
 function adminVerify(array $sanitizedRequest)
 {
-    $redirectUrl = './login';
-    $redirectMessage = 'Recheck your credentials.';
+    return userVerification($sanitizedRequest, './login', 'Recheck your credentials.', true);
+}
 
+function userVerification(array $sanitizedRequest, string $redirectUrl, string $redirectMessage, bool $adminCheck = false)
+{
     $user = new User();
     $existingUser = $user->dataVerify($sanitizedRequest['email']);
 
-    if (!$existingUser) {
-        $_SESSION['message'] = $redirectMessage . '1';
+    $existingUser = array_values($existingUser);
+
+    if (!$existingUser || !password_verify($sanitizedRequest['password'], $existingUser[0]['password'])) {
+        $_SESSION['message'] = $redirectMessage;
         return redirect($redirectUrl);
     }
 
-    if (password_verify($sanitizedRequest['password'], $existingUser[0]['password'])) {
+    $userData = $existingUser[0];
 
-        $userData = $existingUser[0];
-    } else {
-        $_SESSION['message'] = $redirectMessage . '2';
-        return redirect($redirectUrl);
-    }
-
-    if ($existingUser[0]['auth_permit'] == 'is_Permit' && $existingUser[0]['role'] == 'is_Admin') {
-
+    if ($userData['auth_permit'] === 'is_Permit') {
+        if ($adminCheck && $userData['role'] !== 'is_Admin') {
+            $_SESSION['message'] = $redirectMessage;
+            return redirect($redirectUrl);
+        }
         return $userData;
     }
 
-    $_SESSION['message'] = $redirectMessage . '3';
+    $_SESSION['message'] = 'Your registration is under processing. Wait for confirmation e-mail. Thanks.';
     return redirect($redirectUrl);
 }
 
 function amountValidity(string $amount, array &$errors): string
 {
-    if (!preg_match('/^\d+(\.\d{1,2})?$/', $amount)) {
-        $errors['amount'] = 'Amount must be a valid number with up to two decimal places.';
-        return '';
-    }
-
-    return number_format((float) $amount, 2, '.', '');
+    return validateAmount($amount, $errors, '/^\d+(\.\d{1,2})?$/', 'Amount must be a valid number with up to two decimal places.');
 }
 
 function solidAmountValidity(string $amount, array &$errors): string
 {
-    if (!preg_match('/^\d+$/', $amount)) {
-        $errors['amount'] = 'Amount must be a valid solid number (no decimals).';
-        return '';
-    }
-
-    return number_format((int) $amount, 0, '.', '');
+    return validateAmount($amount, $errors, '/^\d+$/', 'Amount must be a valid solid number (no decimals).');
 }
 
-function accountBalance($userId)
+function validateAmount(string $amount, array &$errors, string $pattern, string $errorMessage): string
+{
+    if (!preg_match($pattern, $amount)) {
+        $errors['amount'] = $errorMessage;
+        return '';
+    }
+    return number_format((float)$amount, 2, '.', '');
+}
+
+function accountBalance(int $userId): array
 {
     $transactions = (new Transaction())->show($userId);
-    $balance = 0;
+    $balance = array_reduce($transactions, function ($carry, $transaction) {
+        $amount = ($transaction['trans_type'] === 'deposit') ? $transaction['amount'] : -$transaction['amount'];
+        return $carry + $amount;
+    }, 0);
 
-    foreach ($transactions as $transaction) {
-
-        $amount = $transaction['trans_type'] == 'deposit'
-            ? $transaction['amount']
-            : - ($transaction['amount']);
-
-        $balance += $amount;
-    }
-    
-    $transInfo = [
+    return [
         'transactions' => $transactions,
         'balance' => $balance
     ];
-
-    return $transInfo;
 }
 
-function customerNameShow($customerId){
+function customerNameShow(int $customerId): string
+{
     $user = new User();
-    $nameInArray = $user->customerNameShow($customerId);
-    $customerName = $nameInArray['first_name'] . ' ' . $nameInArray['last_name'];
-
-    return $customerName;
+    $name = $user->customerNameShow($customerId);
+    return trim($name['first_name'] . ' ' . $name['last_name']);
 }

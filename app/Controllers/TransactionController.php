@@ -20,7 +20,7 @@ class TransactionController
         if ($this->hasSufficientBalance($balance, $amount)) {
             $this->processTransaction($request, 'withdraw', '/create-withdraw');
         } else {
-            $_SESSION['message'] = 'Balance is not sufficient!';
+            $_SESSION['message'] = 'Balance is not sufficient! Or wrong input!';
             return redirect('/withdraw');
         }
     }
@@ -38,7 +38,7 @@ class TransactionController
         if ($this->hasSufficientBalance($balance, $amount)) {
             $this->processTransaction($request, 'transfer', '/create-transfer');
         } else {
-            $_SESSION['message'] = 'Balance is not sufficient!';
+            $_SESSION['message'] = 'Balance is not sufficient! Or wrong input!';
             return redirect('/transfer');
         }
     }
@@ -94,6 +94,9 @@ class TransactionController
 
     private function hasSufficientBalance($balance, $amount)
     {
+        if ($amount <= 0) {
+            return false;
+        }
         return $balance['balance'] >= $amount;
     }
 }

@@ -42,8 +42,8 @@ class AuthController extends Controller
         $snitizedName = nameValidity($request['fullName'], $errors);
         $fullName = getFirstAndLastName($snitizedName);
 
-        $sanitizedRequest['firstName'] = $fullName['first_name'] ?? '';
-        $sanitizedRequest['lastName'] = $fullName['last_name'] ?? '';
+        $sanitizedRequest['first_name'] = $fullName['first_name'] ?? '';
+        $sanitizedRequest['last_name'] = $fullName['last_name'] ?? '';
         $sanitizedRequest['email'] = sanitizedEmail($request['email'], $errors);
         $sanitizedRequest['password'] = sanitizedPassword($request['password'], $errors);
         $sanitizedRequest['role'] = '';
