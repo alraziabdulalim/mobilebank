@@ -8,95 +8,99 @@ class TransactionController
 {
     public function deposit($request)
     {
-        $this->processTransaction($request, 'deposit', '/create-deposit');
-    }
-
-    public function withdraw($request)
-    {
-        $userId = $_SESSION['user']['id'];
-        $balance = accountBalance($userId);
-        $amount = $request['amount'];
-
-        if ($this->hasSufficientBalance($balance, $amount)) {
-            $this->processTransaction($request, 'withdraw', '/create-withdraw');
-        } else {
-            $_SESSION['message'] = 'Balance is not sufficient! Or wrong input!';
-            return redirect('/withdraw');
-        }
-    }
-
-    public function transfer($request)
-    {
-        if (!isset($request['email'])) {
-            $_SESSION['errors']['email'] = 'Email required!';
-            return redirect('/transfer');
-        }
-        $userId = $_SESSION['user']['id'];
-        $balance = accountBalance($userId);
-        $amount = $request['amount'];
-
-        if ($this->hasSufficientBalance($balance, $amount)) {
-            $this->processTransaction($request, 'transfer', '/create-transfer');
-        } else {
-            $_SESSION['message'] = 'Balance is not sufficient! Or wrong input!';
-            return redirect('/transfer');
-        }
-    }
-
-    private function processTransaction($request, $transType, $backLink)
-    {
-        $link = [
-            'back' => $backLink,
-            'go' => '/dashboard'
-        ];
+        $link = [];
+        $transType = 'deposit';
+        $link['back'] = '../customer/deposit';
+        $link['go'] = '../customer';
 
         $this->formValidation($request, $transType, $link);
     }
 
-    private function formValidation($request, $transType, $link)
+    public function withdraw($request)
     {
-        $errors = [];
-        $sanitizedRequest = [
-            'amount' => solidAmountValidity($request['amount'], $errors),
-            'email' => isset($request['email']) ? sanitizedEmail($request['email'], $errors) : 'self'
-        ];
+        $link = [];
+        $transType = 'withdraw';
+        $link['back'] = '../customer/withdraw';
+        $link['go'] = '../customer';
+        $balance = $request['balance'];
+        $amount = $request['amount'];
 
-        if (empty($errors) && $sanitizedRequest['amount'] && $sanitizedRequest['email']) {
-            $newRequest = [
-                'user_id' => $_SESSION['user']['id'],
-                'pay_to' => $sanitizedRequest['email'],
-                'amount' => $sanitizedRequest['amount'],
-                'trans_type' => $transType,
-                'status' => 'success'
-            ];
+        if($balance - $amount >= 0){
+
+            $this->formValidation($request, $transType, $link);
+        }
+        $_SESSION['message'] = 'Balance is not sufficient!';
+
+        return redirect($link['back']);
+    }
+
+    public function transfer($request)
+    {
+        $link = [];
+        $transType = 'transfer';
+        $link['back'] = '../customer/transfer';
+        $link['go'] = '../customer';
+        $balance = $request['balance'];
+        $amount = $request['amount'];
+
+        if($balance - $amount >= 0){
+
+            $this->formValidation($request, $transType, $link);
+        }
+        $_SESSION['message'] = 'Balance is not sufficient!';
+        
+        return redirect($link['back']);
+    }
+
+    public function formValidation($request, $transType, $link)
+    {
+        $newRequest = [];
+        $sanitizedRequest = [];
+        $errors = [];
+
+        $sanitizedRequest['amount'] = solidAmountValidity($request['amount'], $errors);
+
+        if(isset($request['email'])){
+            $sanitizedRequest['email'] = sanitizedEmail($request['email'], $errors);
+        }else{
+            $sanitizedRequest['email'] = 'self';
+        }
+
+        if (empty($errors) && !empty($sanitizedRequest['amount']) && !empty($sanitizedRequest['email'])) {
+            $newRequest['user_id'] = $_SESSION['user']['id'];
+            $newRequest['pay_to'] = $sanitizedRequest['email'];
+            $newRequest['amount'] = $sanitizedRequest['amount'];
+            $newRequest['trans_type'] = $transType;
+            $newRequest['status'] = 'success';
 
             $this->transactionTry($newRequest, $link);
         } else {
             $_SESSION['errors'] = $errors;
             $_SESSION['sanitizedRequest'] = $request['amount'];
+
             return redirect($link['back']);
         }
     }
 
-    private function transactionTry($newRequest, $link)
+    public function transactionTry($newRequest, $link)
     {
         try {
             $transaction = new Transaction();
             $newTransaction = $transaction->create($newRequest);
 
-            $_SESSION['message'] = $newTransaction ? 'Transaction Successful.' : 'Transaction Unsuccessful!';
-            return redirect($newTransaction ? $link['go'] : $link['back']);
+            if ($newTransaction) {
+                $_SESSION['message'] = 'Successfull Deposit.';
+
+                return redirect($link['go']);
+            } else {
+                $_SESSION['message'] = 'Deposit Unsuccessful!';
+
+                return redirect($link['back']);
+            }
         } catch (\Exception $e) {
             $_SESSION['errors'] = ['email' => $e->getMessage()];
+
             return redirect($link['back']);
         }
-    }
-
-    private function hasSufficientBalance($balance, $amount)
-    {
-        if ($amount <= 0) {
-            return false;
-        }
-        return $balance['balance'] >= $amount;
     }
 }

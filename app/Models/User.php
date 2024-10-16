@@ -4,111 +4,87 @@ namespace App\Models;
 
 class User extends Model
 {
-    public function __construct()
-    {
-        parent::__construct('users');
-    }
-
-    public function initializeDataFile(): void
-    {
-        if (!file_exists($this->dataFile)) {
-            file_put_contents($this->dataFile, json_encode([]));
-        }
-    }
-
     public function create(array $data)
     {
-        foreach ($this->getAll() as $user) {
-            if ($user['email'] === $data['email']) {
-                throw new \Exception("The email address '{$data['email']}' is already in use.");
-            }
+        $stmt = $this->db->prepare("SELECT COUNT(*) FROM user WHERE email = :email");
+        $stmt->bindParam(':email', $data['email']);
+        $stmt->execute();
+        $emailExists = $stmt->fetchColumn();
+
+        if ($emailExists) {
+            throw new \Exception("The email address '{$data['email']}' is already in use.");
         }
 
-        $data['id'] = $this->generateUniqueId();
-        $data['created_at'] = date('Y-m-d H:i:s');
+        $stmt = $this->db->prepare("INSERT INTO user (name, email, password, role, auth_permit, created_at) VALUES (:name, :email, :password, :role, :auth_permit, NOW())");
+        $stmt->bindParam(':name', $data['name']);
+        $stmt->bindParam(':email', $data['email']);
+        $stmt->bindParam(':password', $data['password']);
+        $stmt->bindParam(':role', $data['role']);
+        // $stmt->bindValue(':role', 'role');
+        $stmt->bindParam(':auth_permit', $data['auth_permit']);
 
-        return $this->store($data);
+        return $stmt->execute();
     }
 
-    public function view(): array
+    public function view()
     {
-        return $this->getAll();
+        $stmt = $this->db->prepare("SELECT * FROM user");
+        $stmt->execute();
+
+        return $stmt->fetchAll();
     }
 
-    public function show($email): ?array
+    public function show($email)
     {
-        foreach ($this->getAll() as $user) {
-            if ($user['email'] === $email) {
-                return $user;
-            }
-        }
+        $stmt = $this->db->prepare("SELECT * FROM user WHERE email = :email");
+        $stmt->bindParam(':email', $email);
+        $stmt->execute();
 
-        return null;
+        return $stmt->fetch();
     }
 
-    public function edit($id): ?array
+    public function dataVerify($email)
     {
-        return $this->findById($id);
+        $stmt = $this->db->prepare("SELECT * FROM user WHERE email = :email");
+        $stmt->bindParam(':email', $email);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
     }
 
-    public function update($id, array $data): bool
+    public function edit($id)
     {
-        return parent::update($id, $data);
+        return $this->show($id);
     }
 
-    public function delete($id): bool
+    public function update($id, array $data)
     {
-        return parent::delete($id);
+        $stmt = $this->db->prepare("UPDATE user SET name = :name, email = :email, password = :password, role = :role, auth_permit = :auth_permit WHERE id = :id");
+        $stmt->bindParam(':name', $data['name']);
+        $stmt->bindParam(':email', $data['email']);
+        $stmt->bindParam(':password', $data['password']);
+        $stmt->bindParam(':role', $data['role']);
+        $stmt->bindParam(':auth_permit', $data['auth_permit']);
+        $stmt->bindParam(':id', $id);
+
+        return $stmt->execute();
     }
 
-    public function isPermit($request): bool
+    public function isPermit($request)
     {
-        $data = $this->findById($request['user_id']);
+        $stmt = $this->db->prepare("UPDATE user SET role = :role, auth_permit = :auth_permit WHERE id = :id");
+        $stmt->bindParam(':role', $request['role']);
+        $stmt->bindParam(':auth_permit', $request['auth_permit']);
+        $stmt->bindParam(':id', $request['user_id']);
 
-        if ($data) {
-            $data['role'] = $request['role'];
-            $data['auth_permit'] = $request['auth_permit'];
-
-            return $this->update($request['user_id'], $data);
-        }
-
-        return false;
+        return $stmt->execute();
     }
 
-    public function dataVerify($email): array
+    public function delete($id)
     {
-        return array_filter($this->getAll(), fn($user) => $user['email'] === $email);
-    }
+        $stmt = $this->db->prepare("DELETE FROM user WHERE id = :id");
+        $stmt->bindParam(':id', $id);
 
-    public function customerNameShow($customerId): ?array
-    {
-        $user = $this->findById($customerId);
-        if ($user) {
-            return [
-                'first_name' => $user['first_name'],
-                'last_name' => $user['last_name']
-            ];
-        }
-
-        return null;
-    }
-
-    private function generateUniqueId(): int
-    {
-        $users = $this->getAll();
-        $maxId = 0;
-
-        foreach ($users as $user) {
-            if ($user['id'] > $maxId) {
-                $maxId = $user['id'];
-            }
-        }
-
-        return $maxId + 1;
-    }
-
-    public function findByEmailPublic(string $email): ?array
-    {
-        return $this->findByEmail($email);
+        return $stmt->execute();
     }
 }

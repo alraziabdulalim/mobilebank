@@ -2,76 +2,29 @@
 
 namespace App\Models;
 
+use PDO;
+
 class Model
 {
-    protected string $dataFile;
-
-    public function __construct(string $filename)
+    protected PDO $db;
+    public function __construct()
     {
-        $this->dataFile = __DIR__ . "/../../datastore/JSON/{$filename}.json";
+        $config = require_once __DIR__ . "/../../config/database.php";
 
-        if (!file_exists($this->dataFile)) {
-            file_put_contents($this->dataFile, json_encode([]));
+        try {
+            $this->db = new PDO(
+                "mysql:host={$config['host']};
+                dbname={$config['dbname']}",
+                $config['username'],
+                $config['password']
+            );
+
+            $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+            $this->db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+
+        } catch (\PDOException $e) {
+            echo $e->getMessage();
         }
-    }
-
-    public function getAll(): array
-    {
-        return json_decode(file_get_contents($this->dataFile), true) ?? [];
-    }
-
-    public function store(array $data): bool
-    {
-        $currentData = $this->getAll();
-        $currentData[] = $data;
-
-        return file_put_contents($this->dataFile, json_encode($currentData, JSON_PRETTY_PRINT)) !== false;
-    }
-
-    public function findById($id): ?array
-    {
-        $data = $this->getAll();
-
-        foreach ($data as $record) {
-            if ($record['id'] == $id) {
-                return $record;
-            }
-        }
-
-        return null;
-    }
-
-    protected function findByEmail(string $email): ?array
-    {
-        $allData = $this->getAll();
-        foreach ($allData as $record) {
-            if ($record['email'] === $email) {
-                return $record;
-            }
-        }
-        return null;
-    }
-
-    public function update($id, array $newData): bool
-    {
-        $data = $this->getAll();
-
-        foreach ($data as &$record) {
-            if ($record['id'] == $id) {
-                $record = array_merge($record, $newData);
-                return file_put_contents($this->dataFile, json_encode($data, JSON_PRETTY_PRINT)) !== false;
-            }
-        }
-
-        return false;
-    }
-
-    public function delete($id): bool
-    {
-        $data = $this->getAll();
-
-        $filteredData = array_filter($data, fn($record) => $record['id'] != $id);
-
-        return file_put_contents($this->dataFile, json_encode($filteredData, JSON_PRETTY_PRINT)) !== false;
     }
 }

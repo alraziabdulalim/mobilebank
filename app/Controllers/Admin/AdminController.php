@@ -34,7 +34,14 @@ class AdminController
 
         $_SESSION['user'] = adminVerify($sanitizedRequest);
 
-        header('Location: ./customers');
+        header('Location: ./dashboard');
+    }
+
+    public function dashboard()
+    {
+        $transaction = new Transaction();
+        $transactions = $transaction->view();
+        return view("admin/dashboard", ['transactions' => $transactions]);
     }
     public function logout()
     {

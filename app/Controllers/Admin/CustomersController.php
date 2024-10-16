@@ -8,14 +8,14 @@ class CustomersController
 {
     public function index()
     {
-        $customers = new User();
-        $customers = $customers->view();
-        return view("admin/customers", ['customers' => $customers]);
+        $users = new User();
+        $userList = $users->view();
+        return view("admin/customers/index", ['userList' => $userList]);
     }
 
     public function create()
     {
-        return view("admin/customers-create");
+        return view("admin/customers/create");
     }
 
     public function store($request)
@@ -26,7 +26,7 @@ class CustomersController
             $_SESSION['errors'] = $validateRequest['errors'];
             $_SESSION['sanitizedRequest'] = $validateRequest['sanitizedRequest'];
 
-            return redirect('customers-create');
+            return redirect('./create');
         }
 
         try {
@@ -36,16 +36,16 @@ class CustomersController
             if ($newUser) {
                 $_SESSION['message'] = 'Your Registration is under processing. Wait for confirmation e-mail. Thanks';
 
-                return redirect('customers');
+                return redirect('../customers');
             } else {
                 $_SESSION['message'] = 'Registration Unsuccessful!';
 
-                return redirect('customers-create');
+                return redirect('./create');
             }
         } catch (\Exception $e) {
             $_SESSION['errors'] = ['email' => $e->getMessage()];
 
-            return redirect('customers-create');
+            return redirect('./create');
         }
     }
 
@@ -54,8 +54,7 @@ class CustomersController
         $errors = [];
         $sanitizedRequest = [];
 
-        $sanitizedRequest['first_name'] = nameValidity($request['first_name'], $errors);
-        $sanitizedRequest['last_name'] = nameValidity($request['last_name'], $errors);
+        $sanitizedRequest['name'] = nameValidity($request['name'], $errors);
         $sanitizedRequest['email'] = sanitizedEmail($request['email'], $errors);
         $sanitizedRequest['password'] = sanitizedPassword($request['password'], $errors);
         $authPermit = $request['auth_permit'] ?? null;
@@ -77,9 +76,11 @@ class CustomersController
         if ($newRequest['auth_permit'] != null) {
             $user->isPermit($newRequest);
 
-            return redirect('./customers');
+            // return view("admin/customers"); //does not work
+            return redirect('/admin/customers');
         }
 
-        return redirect('./customers');
+        // return view("admin/customers"); //does not work
+        return redirect('/admin/customers');
     }
 }

@@ -1,11 +1,16 @@
 <?php
-
 $is_logged_in = isset($_SESSION['user']);
 
 if (!$is_logged_in) {
   header("Location: ../login");
   exit;
 }
+
+$errors = $_SESSION['errors'] ?? [];
+unset($_SESSION['errors']);
+
+$request = $_SESSION['sanitizedRequest'] ?? [];
+unset($_SESSION['sanitizedRequest']);
 
 $message = $_SESSION['message'] ?? '';
 unset($_SESSION['message']);
@@ -37,29 +42,27 @@ unset($_SESSION['message']);
     }
   </style>
 
-  <title>Dashboard</title>
+  <title>Transactions of Al Nahian</title>
 </head>
 
 <body class="h-full">
   <div class="min-h-full">
-    <div class="bg-emerald-600 pb-32">
+    <div class="bg-sky-600 pb-32">
       <!-- Navigation -->
-      <nav class="border-b border-emerald-300 border-opacity-25 bg-emerald-600"
+      <nav class="border-b border-sky-300 border-opacity-25 bg-sky-600"
         x-data="{ mobileMenuOpen: false, userMenuOpen: false }">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div class="flex h-16 justify-between">
             <div class="flex items-center px-2 lg:px-0">
               <div class="hidden sm:block">
                 <div class="flex space-x-4">
-                  <!-- Current: "bg-emerald-700 text-white", Default: "text-white hover:bg-emerald-500 hover:bg-opacity-75" -->
-                  <a href="./customer" class="bg-emerald-700 text-white rounded-md py-2 px-3 text-sm font-medium"
-                    aria-current="page">Dashboard</a>
-                  <a href="./customer/deposit"
-                    class="text-white hover:bg-emerald-500 hover:bg-opacity-75 rounded-md py-2 px-3 text-sm font-medium">Deposit</a>
-                  <a href="./customer/withdraw"
-                    class="text-white hover:bg-emerald-500 hover:bg-opacity-75 rounded-md py-2 px-3 text-sm font-medium">Withdraw</a>
-                  <a href="./customer/transfer"
-                    class="text-white hover:bg-emerald-500 hover:bg-opacity-75 rounded-md py-2 px-3 text-sm font-medium">Transfer</a>
+                  <!-- Current: "bg-sky-700 text-white", Default: "text-white hover:bg-sky-500 hover:bg-opacity-75" -->
+                  <a href="./dashboard"
+                    class="px-3 py-2 text-sm font-medium text-white rounded-md hover:bg-sky-500 hover:bg-opacity-75">Dashboard</a>
+                  <a href="../customers"
+                    class="text-white hover:bg-sky-500 hover:bg-opacity-75 rounded-md py-2 px-3 text-sm font-medium">Customers</a>
+                  <a href="../transactions"
+                    class="bg-sky-700 text-white rounded-md py-2 px-3 text-sm font-medium">Transactions</a>
                 </div>
               </div>
             </div>
@@ -74,10 +77,9 @@ unset($_SESSION['message']);
                     <!-- <img
                         class="h-10 w-10 rounded-full"
                         src="https://avatars.githubusercontent.com/u/831997"
-                        alt="<?= $_SESSION['user']['name']; ?>" /> -->
-                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100">
-                      <span
-                        class="font-medium leading-none text-emerald-700"><?php echo $_SESSION['user']['name']; ?></span>
+                        alt="Ahmed Shamim Hasan Shaon" /> -->
+                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-sky-100">
+                      <span class="font-medium leading-none text-sky-700"><?= $_SESSION['user']['name']; ?></span>
                     </span>
                   </button>
                 </div>
@@ -86,7 +88,7 @@ unset($_SESSION['message']);
                 <div x-show="open" @click.away="open = false"
                   class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
                   role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1">
-                  <a href="/logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem"
+                  <a href="../logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem"
                     tabindex="-1" id="user-menu-item-2">Sign out</a>
                 </div>
               </div>
@@ -94,7 +96,7 @@ unset($_SESSION['message']);
             <div class="-mr-2 flex items-center sm:hidden">
               <!-- Mobile menu button -->
               <button @click="mobileMenuOpen = !mobileMenuOpen" type="button"
-                class="inline-flex items-center justify-center rounded-md p-2 text-emerald-100 hover:bg-emerald-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-emerald-500"
+                class="inline-flex items-center justify-center rounded-md p-2 text-sky-100 hover:bg-sky-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-sky-500"
                 aria-controls="mobile-menu" aria-expanded="false">
                 <span class="sr-only">Open main menu</span>
                 <!-- Icon when menu is closed -->
@@ -117,36 +119,34 @@ unset($_SESSION['message']);
         <!-- Mobile menu, show/hide based on menu state. -->
         <div x-show="mobileMenuOpen" class="sm:hidden" id="mobile-menu">
           <div class="space-y-1 pt-2 pb-3">
-            <a href="./" class="bg-emerald-700 text-white block rounded-md py-2 px-3 text-base font-medium"
-              aria-current="page">Dashboard</a>
-            <a href="./customer/deposit"
-              class="text-white hover:bg-emerald-500 hover:bg-opacity-75 block rounded-md py-2 px-3 text-base font-medium">Deposit</a>
-            <a href="./customer/withdraw"
-              class="text-white hover:bg-emerald-500 hover:bg-opacity-75 block rounded-md py-2 px-3 text-base font-medium">Withdraw</a>
-            <a href="./customer/transfer"
-              class="text-white hover:bg-emerald-500 hover:bg-opacity-75 block rounded-md py-2 px-3 text-base font-medium">Transfer</a>
+            <a href="./dashboard"
+              class="text-white hover:bg-sky-500 hover:bg-opacity-75 block rounded-md py-2 px-3 text-base font-medium">Dashboard</a>
+            <a href="./customers"
+              class="text-white hover:bg-sky-500 hover:bg-opacity-75 block rounded-md py-2 px-3 text-base font-medium">Customers</a>
+            <a href="./transactions"
+              class="text-white hover:bg-sky-500 hover:bg-opacity-75 block rounded-md py-2 px-3 text-base font-medium">Transactions</a>
           </div>
-          <div class="border-t border-emerald-700 pb-3 pt-4">
+          <div class="border-t border-sky-700 pb-3 pt-4">
             <div class="flex items-center px-5">
               <div class="flex-shrink-0">
                 <!-- <img
                     class="h-10 w-10 rounded-full"
                     src="https://avatars.githubusercontent.com/u/831997"
-                    alt="" /> -->
-                <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100">
-                  <span class="font-medium leading-none text-emerald-700"><?= $_SESSION['user']['name']; ?></span>
+                    alt="Ahmed Shamim Hasan Shaon" /> -->
+                <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-sky-100">
+                  <span class="font-medium leading-none text-sky-700"><?= $_SESSION['user']['name']; ?></span>
                 </span>
               </div>
               <div class="ml-3">
                 <div class="text-base font-medium text-white">
                   <?= $_SESSION['user']['name']; ?>
                 </div>
-                <div class="text-sm font-medium text-emerald-300">
-                  <?= $_SESSION['user']['email']; ?>
+                <div class="text-sm font-medium text-sky-300">
+                  <?= $_SESSION['user']['name']; ?>
                 </div>
               </div>
               <button type="button"
-                class="ml-auto flex-shrink-0 rounded-full bg-emerald-600 p-1 text-emerald-200 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-emerald-600">
+                class="ml-auto flex-shrink-0 rounded-full bg-sky-600 p-1 text-sky-200 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-sky-600">
                 <span class="sr-only">View notifications</span>
                 <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
                   aria-hidden="true">
@@ -156,8 +156,8 @@ unset($_SESSION['message']);
               </button>
             </div>
             <div class="mt-3 space-y-1 px-2">
-              <a href="/logout"
-                class="block rounded-md px-3 py-2 text-base font-medium text-white hover:bg-emerald-500 hover:bg-opacity-75">Sign
+              <a href="../logout"
+                class="block rounded-md px-3 py-2 text-base font-medium text-white hover:bg-sky-500 hover:bg-opacity-75">Sign
                 out</a>
             </div>
           </div>
@@ -166,7 +166,7 @@ unset($_SESSION['message']);
       <header class="py-10">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h1 class="text-3xl font-bold tracking-tight text-white">
-            Howdy, <?= $_SESSION['user']['name']; ?> 👋
+            Transactions of <?= htmlspecialchars($accountLedger['accountName']); ?>
           </h1>
         </div>
       </header>
@@ -174,40 +174,13 @@ unset($_SESSION['message']);
 
     <main class="-mt-32">
       <div class="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
-        <div class="bg-white rounded-lg p-2">
-          <!-- Current Balance Stat -->
-          <dl class="mx-auto grid grid-cols-1 gap-px sm:grid-cols-2 lg:grid-cols-4">
-            <div
-              class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 bg-white px-4 py-10 sm:px-6 xl:px-8">
-              <dt class="text-sm font-medium leading-6 text-gray-500">
-                Current Balance
-              </dt>
-              <dd class="w-full flex-none text-3xl font-medium leading-10 tracking-tight text-gray-900">
-              <?php
-                  $balance = 0;
-
-                  foreach ($selfTransactions as $transaction) {
-                    
-                      $amount = $transaction['trans_type'] == 'deposit' 
-                          ? $transaction['amount'] 
-                          : -($transaction['amount']);
-                          
-                      $balance += $amount;
-                  }
-                  
-                  echo '$'.$balance;
-                ?>
-              </dd>
-            </div>
-          </dl>
-
+        <div class="bg-white rounded-lg py-8">
           <!-- List of All The Transactions -->
           <div class="px-4 sm:px-6 lg:px-8">
             <div class="sm:flex sm:items-center">
               <div class="sm:flex-auto">
                 <p class="mt-2 text-sm text-gray-700">
-                  Here's a list of all your transactions which inlcuded
-                  receiver's name, email, amount and date.
+                  List of transactions made by <?= htmlspecialchars($accountLedger['accountName']); ?>.
                 </p>
               </div>
             </div>
@@ -235,16 +208,16 @@ unset($_SESSION['message']);
                         </th>
                       </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-200 bg-white">
+                    <tbody class="divide-y divide-gray-200 bg-white">                     
                       <!-- TRANSACTION START -->
-                      <?php foreach ($selfTransactions as $transaction) { ?>
-                        <tr>
-                          <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-800 sm:pl-0">
-                            <?= htmlspecialchars($transaction['pay_to']); ?>
-                          </td>
-                          <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 sm:pl-0">
-                            <?= htmlspecialchars($transaction['pay_to']); ?>
-                          </td>
+                      <?php foreach ($accountLedger['transactions'] as $transaction) { ?>                        
+                      <tr>
+                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-800 sm:pl-0">
+                          <?= htmlspecialchars($transaction['user_id']); ?>
+                        </td>
+                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 sm:pl-0">
+                          <?= htmlspecialchars($transaction['pay_to']); ?>
+                        </td>
                           <?php if (($transaction['trans_type']) == 'deposit') { ?>
                             <td class="whitespace-nowrap px-2 py-4 text-sm font-medium text-emerald-600">
                               <?= '+$' . htmlspecialchars($transaction['amount']); ?>
@@ -254,10 +227,10 @@ unset($_SESSION['message']);
                               <?= '-$' . htmlspecialchars($transaction['amount']); ?>
                             </td>
                           <?php } ?>
-                          <td class="whitespace-nowrap px-2 py-4 text-sm text-gray-500">
-                            <?= htmlspecialchars($transaction['created_at']); ?>
-                          </td>
-                        </tr>
+                        <td class="whitespace-nowrap px-2 py-4 text-sm text-gray-500">
+                        <?= htmlspecialchars($transaction['created_at']); ?>
+                        </td>
+                      </tr>
                       <?php } ?>
                       <!-- TRANSACTION END -->
                     </tbody>

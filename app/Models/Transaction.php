@@ -4,81 +4,68 @@ namespace App\Models;
 
 class Transaction extends Model
 {
-    public function __construct()
-    {
-        parent::__construct('transactions');
-    }
-
-    public function initializeDataFile(): void
-    {
-        if (!file_exists($this->dataFile)) {
-            file_put_contents($this->dataFile, json_encode([]));
-        }
-    }
-
     public function create(array $data)
     {
-        $userModel = new User();
-        $user = $userModel->findById($data['user_id']);
+        $stmt = $this->db->prepare("SELECT COUNT(*) FROM user WHERE id = :id");
+        $stmt->bindParam(':id', $data['user_id']);
+        $stmt->execute();
+        $emailExists = $stmt->fetchColumn();
 
-        if (!$user) {
-            throw new \Exception("The user with ID '{$data['user_id']}' is not found.");
+        if ($emailExists) {
+
+            $stmt = $this->db->prepare("INSERT INTO transaction (user_id, pay_to, amount, trans_type, status, created_at) VALUES (:user_id, :pay_to, :amount, :trans_type, :status, NOW())");
+            $stmt->bindParam(':user_id', $data['user_id']);
+            $stmt->bindParam(':pay_to', $data['pay_to']);
+            $stmt->bindParam(':amount', $data['amount']);
+            $stmt->bindParam(':trans_type', $data['trans_type']);
+            $stmt->bindParam(':status', $data['status']);
+
+            return $stmt->execute();
         }
 
-        $data['id'] = $this->generateUniqueId();
-        $data['created_at'] = date('Y-m-d H:i:s');
-
-        return $this->store($data);
+        throw new \Exception("The email address '{$data['email']}' is not found.");
     }
 
-    public function view(): array
+    public function view()
     {
-        return $this->getAll();
+        $stmt = $this->db->prepare("SELECT * FROM transaction");
+        $stmt->execute();
+
+        return $stmt->fetchAll();
     }
 
-    public function show($userId): array
+    public function show($userId)
     {
-        return array_filter($this->getAll(), fn($transaction) => $transaction['user_id'] == $userId);
+        $stmt = $this->db->prepare("SELECT * FROM transaction WHERE user_id = :user_id");
+        $stmt->bindParam(':user_id', $userId);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
     }
 
-    public function edit($id): ?array
+    public function edit($id)
     {
-        return $this->findById($id);
+        return $this->show($id);
     }
 
-    public function update($id, array $data): bool
+    public function update($id, array $data)
     {
-        $transaction = $this->findById($id);
+        $stmt = $this->db->prepare("UPDATE transaction SET user_id = :user_id, pay_to = :pay_to, amount = :amount, trans_type = :trans_type, status = :status WHERE id = :id");
+        $stmt->bindParam(':user_id', $data['user_id']);
+        $stmt->bindParam(':pay_to', $data['pay_to']);
+        $stmt->bindParam(':amount', $data['amount']);
+        $stmt->bindParam(':trans_type', $data['trans_type']);
+        $stmt->bindParam(':status', $data['status']);
+        $stmt->bindParam(':id', $id);
 
-        if ($transaction) {
-            $transaction['user_id'] = $data['user_id'];
-            $transaction['pay_to'] = $data['pay_to'];
-            $transaction['amount'] = $data['amount'];
-            $transaction['trans_type'] = $data['trans_type'];
-            $transaction['status'] = $data['status'];
-
-            return parent::update($id, $transaction);
-        }
-
-        return false;
+        return $stmt->execute();
     }
 
-    public function delete($id): bool
+    public function delete($id)
     {
-        return parent::delete($id);
-    }
+        $stmt = $this->db->prepare("DELETE FROM transaction WHERE id = :id");
+        $stmt->bindParam(':id', $id);
 
-    private function generateUniqueId(): int
-    {
-        $transactions = $this->getAll();
-        $maxId = 0;
-
-        foreach ($transactions as $transaction) {
-            if ($transaction['id'] > $maxId) {
-                $maxId = $transaction['id'];
-            }
-        }
-
-        return $maxId + 1;
+        return $stmt->execute();
     }
 }

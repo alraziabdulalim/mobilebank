@@ -12,29 +12,30 @@ return [
     "/login" => [HomeController::class, "login"],
     "/register" => [HomeController::class, "register"],
 
-    "/customer-registration" => [AuthController::class, "store"],
+    "/auth/store" => [AuthController::class, "store"],
     "/auth/verify" => [AuthController::class, "verify"],
 
-    "/dashboard" => [CustomerController::class, "index"],
-    "/deposit" => [CustomerController::class, "deposit"],
-    "/withdraw" => [CustomerController::class, "withdraw"],
-    "/transfer" => [CustomerController::class, "transfer"],
+    "/customer" => [CustomerController::class, "index"],
+    "/customer/deposit" => [CustomerController::class, "deposit"],
+    "/customer/withdraw" => [CustomerController::class, "withdraw"],
+    "/customer/transfer" => [CustomerController::class, "transfer"],
     "/logout" => [CustomerController::class, "logout"],
 
-    "/create-deposit" => [TransactionController::class, "deposit"],
-    "/create-withdraw" => [TransactionController::class, "withdraw"],
-    "/create-transfer" => [TransactionController::class, "transfer"],
+    "/transaction/deposit" => [TransactionController::class, "deposit"],
+    "/transaction/withdraw" => [TransactionController::class, "withdraw"],
+    "/transaction/transfer" => [TransactionController::class, "transfer"],
 
     "/admin" => [AdminController::class, "index"],
     "/admin/login" => [AdminController::class, "login"],
     "/admin/verify" => [AdminController::class, "verify"],
+    "/admin/dashboard" => [AdminController::class, "dashboard"],
     "/admin/logout" => [AdminController::class, "logout"],
 
     "/admin/customers" => [CustomersController::class, "index"],
-    "/admin/customers-create" => [CustomersController::class, "create"],
-    "/admin/customers-store" => [CustomersController::class, "store"],
-    "/admin/customers-update" => [CustomersController::class, "update"],
+    "/admin/customers/create" => [CustomersController::class, "create"],
+    "/admin/customers/store" => [CustomersController::class, "store"],
+    "/admin/customers/update" => [CustomersController::class, "update"],
 
     "/admin/transactions" => [TransactionsController::class, "index"],
-    "/admin/customer-transactions" => [TransactionsController::class, "view"],
+    "/admin/transactions/view" => [TransactionsController::class, "view"],
 ];
